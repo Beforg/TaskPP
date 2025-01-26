@@ -1,0 +1,75 @@
+@import url('../../variables.css');
+
+#task-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0;
+}
+
+.task-name {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    
+}
+
+.task-description {
+    font-size: 20px;
+    margin: 0;
+}
+
+.task-act {
+    display: flex;
+    gap: 5px;
+    justify-content: flex-end;
+}
+
+.task-title {
+    font-size: 24px;
+    color: var(--bg);
+    margin: 0;
+    font-weight: bold;
+}
+
+.task-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    max-height: 160px;
+    background-color: var(--background-card);
+    border-radius: 10px;
+    padding: 10px;
+    max-width:  1500px;
+    box-shadow: var(--shadow);
+    transition: transform 0.5s;
+    cursor: pointer;
+}
+
+.task-item:hover {
+    transform: scale(1.01);
+}
+
+.task-details-enter {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition: max-height 300ms ease-out, opacity 300ms ease-out;
+  }
+  
+  .task-details-enter-active {
+    max-height: 160px;
+    opacity: 1;
+  }
+  
+  .task-details-exit {
+    max-height: 160px;
+    opacity: 1;
+    overflow: hidden;
+    transition: max-height 300ms ease-in, opacity 300ms ease-in;
+  }
+  
+  .task-details-exit-active {
+    max-height: 0;
+    opacity: 0;
+  }
