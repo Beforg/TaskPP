@@ -77,10 +77,27 @@
     color: var(--bg);
 }
 
+.add-content button {
+    background-color: transparent;
+    color: var(--bg);
+    font-weight: bold;
+    cursor: pointer;
+}
+
 .add-inputs {
     display: flex;
     flex-direction: column;
     gap: 10px;
+}
+
+.add-inputs button {
+    background-color: var(--bg);
+    color: var(--text-white);
+    border: none;
+    padding: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: transform 0.5s;
 }
 
 .add-inputs-text {

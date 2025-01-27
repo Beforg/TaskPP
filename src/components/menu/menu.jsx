@@ -1,32 +1,108 @@
 import "./menu.css";
 import addImg from "../../assets/add.png";
-import { useState } from "react";
+import { create, countTasks} from "../../services/taskService";
+import { getAllTaskList, createList } from "../../services/taskListService";
+import { useState, useEffect } from "react";
+
 
 const MenuComponent = () => {
   const [isModalAddTask, setModalOpTask] = useState(false);
+  const [isModalAddList, setModalOpList] = useState(false);
   const [formNewTask, setFormNewTask] = useState({
     title: "",
     description: "",
     date: "",
-    completed: false,
-    listId: 0,
+    listId: "",
   });
+  const [formNewList, setFormNewList] = useState({
+    name: "",
+    category: "",
+  });
+  const [counter, setCounter] = useState(
+    {
+      todayTask: 0,
+      tomorrowTask: 0,
+      nextTasks: 0,
+      lateTasks: 0,
+      deactivatedTasks: 0
+    }
+  );
+  const [continueAdd, setContinueAdd] = useState(false);
+  const [taskLists, setTaskLists] = useState([]);
+
+  useEffect(() => {
+    const getAllTaskLists = async () => {
+      try {
+        const data = await getAllTaskList();
+        setTaskLists(data);
+      } catch (error) {
+        console.error('Error fetching task lists:', error);
+      }
+    };
+
+    const getTaskCount = async () => {
+      try {
+        const data = await countTasks();
+        setCounter(data);
+      } catch (error) {
+        console.error('Error fetching task count:', error);
+      }
+    }
+
+    getTaskCount();
+    getAllTaskLists();
+  }, []);
+
   const handleAddClick = () => {
     setModalOpTask(!isModalAddTask);
+  };
+
+  const handleAddTaskList = () => {
+    setModalOpList(!isModalAddList);
+  };
+
+  const handleCheck = (e) => {
+    setContinueAdd(e.target.checked);
+    console.log(continueAdd);
   }
 
   const handleChange = (e) => {
-    const {name, value} = e.target;
+    const { name, value } = e.target;
     setFormNewTask({
       ...formNewTask,
       [name]: value,
     });
-  }
+  };
 
-  const handleSubmit = (e) => {
+  const handleChangeList = (e) => {
+    const { name, value } = e.target;
+    setFormNewList({
+      ...formNewList,
+      [name]: value,
+    });
+
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(formNewTask);
+    try {
+      const task = await create(formNewTask);
+      console.log(task);
+    } catch (error) {
+      console.error(error);
+    }
     setModalOpTask(false);
+  };
+
+  const handleSubmitList = async (e) => {
+    e.preventDefault();
+    try {
+      const taskList = await createList(formNewList);
+      console.log(taskList);
+    } catch (error) {
+      console.error(error);
+    }
+    setModalOpList(false);
   }
 
   return (
@@ -41,25 +117,25 @@ const MenuComponent = () => {
         </div>
         <li>
           <div className="item">
-            <p className="task-numbitem-number">0</p>
+            <p className="item-number">{counter.todayTask}</p>
             <p className="task-type">Hoje</p>
           </div>
         </li>
         <li>
           <div className="item">
-            <p className="item-number">0</p>
+            <p className="item-number">{counter.tomorrowTask}</p>
             <p className="task-type">Amanhã</p>
           </div>
         </li>
         <li>
           <div className="item">
-            <p className="item-number">0</p>
+            <p className="item-number">{counter.nextTasks}</p>
             <p className="task-type">Próximos</p>
           </div>
         </li>
         <li>
           <div className="item">
-            <p className="item-number">0</p>
+            <p className="item-number">{counter.lateTasks}</p>
             <p className="task-type">Atrasados</p>
           </div>
         </li>
@@ -67,7 +143,7 @@ const MenuComponent = () => {
       <ul className="menu-list">
         <div className="title-add">
           <h3>Minhas Listas</h3>
-          <button className="button-add">
+          <button className="button-add" onClick={handleAddTaskList}>
             <img src={addImg} alt="Adicionar" />
           </button>
         </div>
@@ -83,34 +159,93 @@ const MenuComponent = () => {
       {isModalAddTask && (
         <div className="add-overlay">
           <div className="add-content">
+            <button onClick={handleAddClick}>X</button>
             <h2>Adicionar Nova Tarefa</h2>
             <div className="add-inputs">
-                <label htmlFor="add-inputs-title">Título</label>
-                <input 
-                    className="add-inputs-text"
-                    id="add-inputs-title"
-                    type="text"
-                    name="title"
-                    placeholder="Título"
-                    onChange={handleChange}
-                />
-                <label htmlFor="add-inputs-description">Descrição</label>
-                <textarea
-                    className="add-inputs-text"
-                    id="add-inputs-description"
-                    type="text"
-                    name="description"
-                    placeholder="Descrição"
-                    onChange={handleChange}
-                />
-                <label htmlFor="add-inputs-date">Data</label>
+              <label htmlFor="add-inputs-title">Título</label>
+              <input
+                className="add-inputs-text"
+                id="add-inputs-title"
+                type="text"
+                name="title"
+                placeholder="Título"
+                value={formNewTask.title}
+                onChange={handleChange}
+              />
+              <label htmlFor="add-inputs-description">Descrição</label>
+              <textarea
+                className="add-inputs-text"
+                id="add-inputs-description"
+                type="text"
+                name="description"
+                placeholder="Descrição"
+                value={formNewTask.description}
+                onChange={handleChange}
+              />
+              <label htmlFor="add-inputs-date">Data</label>
+              <input
+                className="add-inputs-text"
+                type="date"
+                name="date"
+                id="add-inputs-date"
+                value={formNewTask.date}
+                onChange={handleChange}
+              />
+              <label htmlFor="selected-list">Adicionar a Lista</label>
+              <select
+                className="add-inputs-text"
+                name="listId"
+                id="selected-list"
+                value={formNewTask.listId}
+                onChange={handleChange}
+              >
+                <option value="">Selecione uma lista</option>
+                {taskLists.map((list) => (
+                  <option key={list.id} value={list.id}>
+                    {list.name}
+                  </option>
+                ))}
+              </select>
+              <span>
                 <input
-                    id="add-inputs-date"
-                    type="date"
-                    name="date"
-                    onChange={handleChange}
+                  type="checkbox"
+                  name="continue"
+                  id="continue-input"
+                  onChange={handleCheck}
                 />
-                <button onClick={handleAddClick}>Fechar</button>
+                <label htmlFor="continue-input">Continuar Adicionando</label>
+              </span>
+              <button onClick={handleSubmit}>Criar Tarefa</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {isModalAddList && (
+        <div className="add-overlay">
+          <div className="add-content">
+            <button onClick={handleAddTaskList}>X</button>
+            <h2>Adicionar Nova Lista</h2>
+            <div className="add-inputs">
+              <label htmlFor="add-inputs-title">Nome</label>
+              <input
+                className="add-inputs-text"
+                id="add-inputs-title"
+                type="text"
+                name="name"
+                value={formNewList.name}
+                onChange={handleChangeList}
+                placeholder="Nome"
+              />
+                <input
+                className="add-inputs-text"
+                id="add-inputs-title"
+                type="text"
+                name="category"
+                value={formNewList.category}
+                onChange={handleChangeList}
+                placeholder="Categoria"
+              />
+              <button onClick={handleSubmitList}>Adicionar Lista</button>
             </div>
           </div>
         </div>

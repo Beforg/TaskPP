@@ -21,12 +21,16 @@ const TaskComponent = () => {
   const handleTaskClick = (taskId) => {
     setSelectedTask(selectedTask === taskId ? null : taskId);
   }
+
+  const handleCheckboxChange = (id) => {
+    console.log("Mudou", id);
+  }
   return (
     <ul id="task-list">
       {tasks.map((task) => (
               <li key={task.id} onClick={() => handleTaskClick(task.id)} className="task-item">
               <div className="task-name">
-                <input type="checkbox" checked={task.completed}/>
+                <input type="checkbox" checked={task.completed} onChange={() => handleCheckboxChange(task.id)}/>
                 <p className="task-title">{task.title}</p>
               </div>
               {/* {selectedTask === task.id && (
