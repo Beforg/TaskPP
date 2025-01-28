@@ -1,11 +1,11 @@
 import "./menu.css";
 import addImg from "../../assets/add.png";
 import { create, countTasks} from "../../services/taskService";
-import { getAllTaskList, createList } from "../../services/taskListService";
 import { useState, useEffect } from "react";
+import { getTodayDate, getTomorrowDate } from "../../utils/dateFormat";
 
 
-const MenuComponent = () => {
+const MenuComponent = ({addTask, addTaskList, taskLists, setSelectedDate}) => {
   const [isModalAddTask, setModalOpTask] = useState(false);
   const [isModalAddList, setModalOpList] = useState(false);
   const [formNewTask, setFormNewTask] = useState({
@@ -28,17 +28,8 @@ const MenuComponent = () => {
     }
   );
   const [continueAdd, setContinueAdd] = useState(false);
-  const [taskLists, setTaskLists] = useState([]);
 
   useEffect(() => {
-    const getAllTaskLists = async () => {
-      try {
-        const data = await getAllTaskList();
-        setTaskLists(data);
-      } catch (error) {
-        console.error('Error fetching task lists:', error);
-      }
-    };
 
     const getTaskCount = async () => {
       try {
@@ -50,8 +41,12 @@ const MenuComponent = () => {
     }
 
     getTaskCount();
-    getAllTaskLists();
   }, []);
+
+  const handleSelectedDate = (date) => {
+    setSelectedDate(date);
+    console.log(date);
+  }
 
   const handleAddClick = () => {
     setModalOpTask(!isModalAddTask);
@@ -85,23 +80,13 @@ const MenuComponent = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const task = await create(formNewTask);
-      console.log(task);
-    } catch (error) {
-      console.error(error);
-    }
+    await addTask(formNewTask);
     setModalOpTask(false);
   };
 
   const handleSubmitList = async (e) => {
     e.preventDefault();
-    try {
-      const taskList = await createList(formNewList);
-      console.log(taskList);
-    } catch (error) {
-      console.error(error);
-    }
+    await addTaskList(formNewList);
     setModalOpList(false);
   }
 
@@ -118,25 +103,31 @@ const MenuComponent = () => {
         <li>
           <div className="item">
             <p className="item-number">{counter.todayTask}</p>
-            <p className="task-type">Hoje</p>
+            <p className="task-type" onClick={() => handleSelectedDate(getTodayDate())}>Hoje</p>
           </div>
         </li>
         <li>
           <div className="item">
             <p className="item-number">{counter.tomorrowTask}</p>
-            <p className="task-type">Amanhã</p>
+            <p className="task-type" onClick={() => handleSelectedDate(getTomorrowDate())}>Amanhã</p>
           </div>
         </li>
         <li>
           <div className="item">
             <p className="item-number">{counter.nextTasks}</p>
-            <p className="task-type">Próximos</p>
+            <p className="task-type" onClick={() => handleSelectedDate("next")}>Próximos</p>
           </div>
         </li>
         <li>
           <div className="item">
             <p className="item-number">{counter.lateTasks}</p>
-            <p className="task-type">Atrasados</p>
+            <p className="task-type" onClick={()=> handleSelectedDate("late")}>Atrasados</p>
+          </div>
+        </li>
+        <li>
+          <div className="item">
+            <p className="item-number">{counter.deactivatedTasks}</p>
+            <p className="task-type" onClick={()=> handleSelectedDate("trash")}>Lixeira</p>
           </div>
         </li>
       </ul>
@@ -148,12 +139,10 @@ const MenuComponent = () => {
           </button>
         </div>
         <li>
-          <li>
             <div className="item">
               <p className="item-number">0</p>
               <p className="task-type">Casa</p>
             </div>
-          </li>
         </li>
       </ul>
       {isModalAddTask && (

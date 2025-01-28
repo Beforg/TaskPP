@@ -50,6 +50,17 @@
     transform: scale(1.01);
 }
 
+.button-task {
+    background-color: transparent;
+    outline-style: none;
+    border: none;
+    transition: transform 0.5s;
+}
+
+.button-task img:hover {
+    transform: scale(1.1);
+}
+
 .task-details-enter {
     max-height: 0;
     opacity: 0;

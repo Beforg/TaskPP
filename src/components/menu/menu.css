@@ -25,6 +25,14 @@
     gap: 10px;
 }
 
+.task-type {
+    cursor: pointer;
+}
+
+.task-type:hover {
+    color: var(--hover);
+}
+
 .item-number {
     padding: 2px 4px;
     border-radius: 5px;
