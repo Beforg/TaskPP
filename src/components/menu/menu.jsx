@@ -1,11 +1,26 @@
 import "./menu.css";
 import addImg from "../../assets/add.png";
-import { create, countTasks} from "../../services/taskService";
 import { useState, useEffect } from "react";
 import { getTodayDate, getTomorrowDate } from "../../utils/dateFormat";
+import classNames from "classnames";
+import Pagination from "../pagination/pagination";
+import edit from "../../assets/edt-white.png";
+import del from "../../assets/del.png";
 
-
-const MenuComponent = ({addTask, addTaskList, taskLists, setSelectedDate}) => {
+const MenuComponent = ({
+  addTask,
+  addTaskList,
+  taskLists,
+  setSelectedDate,
+  taskListPag,
+  getTaskListPag,
+  currentPage,
+  totalPages,
+  onPageChange,
+  taskCount,
+  updateList,
+  deleteList,
+}) => {
   const [isModalAddTask, setModalOpTask] = useState(false);
   const [isModalAddList, setModalOpList] = useState(false);
   const [formNewTask, setFormNewTask] = useState({
@@ -18,35 +33,15 @@ const MenuComponent = ({addTask, addTaskList, taskLists, setSelectedDate}) => {
     name: "",
     category: "",
   });
-  const [counter, setCounter] = useState(
-    {
-      todayTask: 0,
-      tomorrowTask: 0,
-      nextTasks: 0,
-      lateTasks: 0,
-      deactivatedTasks: 0
-    }
-  );
   const [continueAdd, setContinueAdd] = useState(false);
-
-  useEffect(() => {
-
-    const getTaskCount = async () => {
-      try {
-        const data = await countTasks();
-        setCounter(data);
-      } catch (error) {
-        console.error('Error fetching task count:', error);
-      }
-    }
-
-    getTaskCount();
-  }, []);
+  const [isEditList, setEditList] = useState(false);
+  const [labelTaskList, setLabelTaskList] = useState("Adicionar nova Lista");
+  const [selectedListId, setSelectedListId] = useState("");
+  const [currentMenuPage, setCurrentMenuPage] = useState("hoje");
 
   const handleSelectedDate = (date) => {
     setSelectedDate(date);
-    console.log(date);
-  }
+  };
 
   const handleAddClick = () => {
     setModalOpTask(!isModalAddTask);
@@ -58,8 +53,7 @@ const MenuComponent = ({addTask, addTaskList, taskLists, setSelectedDate}) => {
 
   const handleCheck = (e) => {
     setContinueAdd(e.target.checked);
-    console.log(continueAdd);
-  }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -75,19 +69,63 @@ const MenuComponent = ({addTask, addTaskList, taskLists, setSelectedDate}) => {
       ...formNewList,
       [name]: value,
     });
-
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     await addTask(formNewTask);
+    console.log("ID DA LISTA: " + formNewTask.listId);
+    if (!continueAdd) {
     setModalOpTask(false);
+    }
+    setFormNewTask({
+      title: "",
+      description: "",
+      date: "",
+      listId: "",
+    });
+  };
+
+  const handleUpdateList = async () => {
+    await updateList(formNewList, selectedListId);
+    await getTaskListPag(0);
+    handleResetFormList();
+    setModalOpList(false);
+  };
+
+  const handleOpenEditList = (list) => {
+    setEditList(true);
+    setLabelTaskList("Editar Lista");
+    setFormNewList({
+      name: list.name,
+      category: list.category,
+    });
+    setSelectedListId(list.id);
+    setModalOpList(!isModalAddList);
+  };
+
+  const handleDeleteList = async (id) => {
+    if (window.confirm("Deseja realmente deletar esta lista?")) { 
+      await deleteList(id);
+      await getTaskListPag(0);
+    }
   };
 
   const handleSubmitList = async (e) => {
     e.preventDefault();
     await addTaskList(formNewList);
+    await getTaskListPag(0);
+    handleResetFormList();
     setModalOpList(false);
+  };
+
+  const handleResetFormList = () => {
+    setFormNewList({
+      name: "",
+      category: "",
+    });
+    setLabelTaskList("Adicionar nova Lista");
+    setEditList(false);
   }
 
   return (
@@ -102,32 +140,61 @@ const MenuComponent = ({addTask, addTaskList, taskLists, setSelectedDate}) => {
         </div>
         <li>
           <div className="item">
-            <p className="item-number">{counter.todayTask}</p>
-            <p className="task-type" onClick={() => handleSelectedDate(getTodayDate())}>Hoje</p>
+            <p className="item-number">{taskCount.todayTask}</p>
+            <p
+              className={classNames("task-type", {
+                "task-type active": currentMenuPage === "today"
+              })}
+              onClick={() => {handleSelectedDate(getTodayDate()); setCurrentMenuPage("today");}}
+            >
+              Hoje
+            </p>
           </div>
         </li>
         <li>
           <div className="item">
-            <p className="item-number">{counter.tomorrowTask}</p>
-            <p className="task-type" onClick={() => handleSelectedDate(getTomorrowDate())}>Amanhã</p>
+            <p className="item-number">{taskCount.tomorrowTask}</p>
+            <p
+              className={classNames("task-type", {
+                "task-type active": currentMenuPage === "tomorrow"
+              })}
+              onClick={() => {handleSelectedDate(getTomorrowDate()); setCurrentMenuPage("tomorrow");}}
+            >
+              Amanhã
+            </p>
           </div>
         </li>
         <li>
           <div className="item">
-            <p className="item-number">{counter.nextTasks}</p>
-            <p className="task-type" onClick={() => handleSelectedDate("next")}>Próximos</p>
+            <p className="item-number">{taskCount.nextTasks}</p>
+            <p className={classNames("task-type", {
+              "task-type active": currentMenuPage === "next"
+            })} onClick={() => {handleSelectedDate("next"); setCurrentMenuPage("next");}}>
+              Próximos
+            </p>
           </div>
         </li>
         <li>
           <div className="item">
-            <p className="item-number">{counter.lateTasks}</p>
-            <p className="task-type" onClick={()=> handleSelectedDate("late")}>Atrasados</p>
+            <p className="item-number">{taskCount.lateTasks}</p>
+            <p className={classNames("task-type", {
+              "task-type active": currentMenuPage === "late"
+            })} onClick={() => {handleSelectedDate("late"); setCurrentMenuPage("late");}}>
+              Atrasados
+            </p>
           </div>
         </li>
         <li>
           <div className="item">
-            <p className="item-number">{counter.deactivatedTasks}</p>
-            <p className="task-type" onClick={()=> handleSelectedDate("trash")}>Lixeira</p>
+            <p className="item-number">{taskCount.deactivatedTasks}</p>
+            <p
+              className={classNames("task-type", {
+                "task-type active": currentMenuPage === "trash"
+              })}
+              onClick={() => {handleSelectedDate("trash"); setCurrentMenuPage("trash");}}
+            >
+              Lixeira
+            </p>
           </div>
         </li>
       </ul>
@@ -138,13 +205,40 @@ const MenuComponent = ({addTask, addTaskList, taskLists, setSelectedDate}) => {
             <img src={addImg} alt="Adicionar" />
           </button>
         </div>
-        <li>
+        {taskListPag.content.map((list) => (
+          <li key={list.id}>
             <div className="item">
-              <p className="item-number">0</p>
-              <p className="task-type">Casa</p>
+              <p className="item-number">{list.tasks}</p>
+              <p
+                className={classNames("task-type", {
+                  "task-type active": currentMenuPage === "list" && selectedListId === list.id
+                })}
+                onClick={() => {handleSelectedDate(list.id); setCurrentMenuPage("list"); setSelectedListId(list.id)} }
+              >
+                {list.name}
+              </p>
             </div>
-        </li>
+            <div className="item-buttons">
+              <button
+                className="button-add"
+                onClick={() => handleOpenEditList(list)}
+              >
+                <img src={edit} alt="Icone para Editar a Lista" />
+              </button>
+              <button className="button-add" onClick={() => handleDeleteList(list.id)}>
+                <img src={del} alt="Icone para Deletar Lista" />
+              </button>
+            </div>
+          </li>
+        ))}
       </ul>
+      <div className="pagContent">
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={onPageChange}
+        />
+      </div>
       {isModalAddTask && (
         <div className="add-overlay">
           <div className="add-content">
@@ -160,6 +254,7 @@ const MenuComponent = ({addTask, addTaskList, taskLists, setSelectedDate}) => {
                 placeholder="Título"
                 value={formNewTask.title}
                 onChange={handleChange}
+                maxLength={100}
               />
               <label htmlFor="add-inputs-description">Descrição</label>
               <textarea
@@ -170,6 +265,7 @@ const MenuComponent = ({addTask, addTaskList, taskLists, setSelectedDate}) => {
                 placeholder="Descrição"
                 value={formNewTask.description}
                 onChange={handleChange}
+                maxLength={200}
               />
               <label htmlFor="add-inputs-date">Data</label>
               <input
@@ -212,8 +308,15 @@ const MenuComponent = ({addTask, addTaskList, taskLists, setSelectedDate}) => {
       {isModalAddList && (
         <div className="add-overlay">
           <div className="add-content">
-            <button onClick={handleAddTaskList}>X</button>
-            <h2>Adicionar Nova Lista</h2>
+            <button
+              onClick={() => {
+                handleAddTaskList();
+                handleResetFormList();
+              }}
+            >
+              X
+            </button>
+            <h2>{labelTaskList}</h2>
             <div className="add-inputs">
               <label htmlFor="add-inputs-title">Nome</label>
               <input
@@ -224,8 +327,9 @@ const MenuComponent = ({addTask, addTaskList, taskLists, setSelectedDate}) => {
                 value={formNewList.name}
                 onChange={handleChangeList}
                 placeholder="Nome"
+                maxLength={15}
               />
-                <input
+              <input
                 className="add-inputs-text"
                 id="add-inputs-title"
                 type="text"
@@ -234,7 +338,11 @@ const MenuComponent = ({addTask, addTaskList, taskLists, setSelectedDate}) => {
                 onChange={handleChangeList}
                 placeholder="Categoria"
               />
-              <button onClick={handleSubmitList}>Adicionar Lista</button>
+              {isEditList == true ? (
+                <button onClick={handleUpdateList}>Salvar</button>
+              ) : (
+                <button onClick={handleSubmitList}>Adicionar Lista</button>
+              )}
             </div>
           </div>
         </div>

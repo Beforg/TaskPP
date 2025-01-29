@@ -1,0 +1,44 @@
+@import url('../../variables.css');
+
+.pagination {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+    padding: 5px;
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    margin-bottom: 5px;
+    font-family: "Montserrat", sans-serif;
+    animation: show 4s;
+
+}
+
+.pagination button {
+    font-weight: bold;
+    border: none;
+    font-size: 20px;
+    border-radius: 2px;
+    font-family: "Montserrat", sans-serif;
+    transition: background-color 0.5s;
+    cursor: pointer;
+}
+
+.pagination button:hover {
+    background-color: var(--hover);
+}
+
+@keyframes show {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+
+}

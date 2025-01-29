@@ -14,3 +14,8 @@ export const getTomorrowDate = () => {
     const day = String(tomorrow.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
 };
+
+export const formatDate = (date) => {
+    const [year, month, day] = date.split('-');
+    return `${day}/${month} de ${year}`;
+}

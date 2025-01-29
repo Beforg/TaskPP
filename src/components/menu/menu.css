@@ -11,6 +11,12 @@
     justify-content:start;
 }
 
+#title {
+    text-align: center;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
 .title-add {
     display: flex;
     gap: 10px;
@@ -62,6 +68,12 @@
     padding: 5px;
 }
 
+.menu-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
 .add-overlay {
     position: fixed;
     top: 0;
@@ -85,11 +97,19 @@
     color: var(--bg);
 }
 
+
 .add-content button {
     background-color: transparent;
     color: var(--bg);
     font-weight: bold;
     cursor: pointer;
+}
+
+
+
+.pagContent {
+    position: relative;
+    margin-top: auto;
 }
 
 .add-inputs {
@@ -117,6 +137,10 @@
     outline: none;
     max-width: 400px;
     max-height: 300px;
+}
+
+.active {
+    color: var(--hover);
 }
 
 @keyframes show {
