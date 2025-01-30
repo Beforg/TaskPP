@@ -54,6 +54,8 @@ Siga as instruções do [Back-End](https://github.com/Beforg/API-TaskPP) para co
 - Criar, listar, editar e excluir tarefas
 - Organizar tarefas em listas
 
+[Vídeo de Demonstração](https://www.linkedin.com/posts/beforg_java-springboot-react-activity-7290555487719190528-QAoE?utm_source=share&utm_medium=member_desktop)
+
 ## 💻 Tecnologias Utilizadas
 
 - **Front-End:** React, JavaScript, HTML, CSS
