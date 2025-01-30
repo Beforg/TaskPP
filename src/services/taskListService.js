@@ -6,6 +6,7 @@ const API_URL = "http://localhost:8080/api/v1/lists";
 export const createList = async (taskList) => {
     try {
         const response = await axios.post(`${API_URL}/create`, taskList);
+        toast.success('Lista criada com sucesso!');
         return response.data;
     } catch (error) {
         console.error(error);
